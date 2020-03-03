@@ -1,0 +1,38 @@
+---
+title: "new-class-enrollment"
+author: "Jack Kelly"
+date: "3/3/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(readxl)
+library(googlesheets4)
+library(fs)
+library(janitor)
+```
+
+```{r}
+download.file("https://registrar.fas.harvard.edu/files/fas-registrar/files/class_enrollment_summary_by_term_12.20.19.xlsx", "current.xlsx")
+
+download.file("https://registrar.fas.harvard.edu/files/fas-registrar/files/class_enrollment_summary_by_term_3.22.19_0.xlsx", "old.xlsx")
+
+current <- read_excel("class_enrollment_summary_by_term_12.20.19.xlsx", skip = 3) %>%
+  clean_names() %>%
+  filter(! is.na(course_name)) %>%
+  select(course_id, course_name, total)
+
+old <- read_excel("class_enrollment_summary_by_term_3.22.19_0.xlsx", skip = 3) %>%
+  clean_names() %>%
+  filter(! is.na(course_name)) %>%
+  select(course_id, course_name, total)
+
+combined <- current %>%
+  anti_join(old, by = "course_name") %>%
+  arrange(desc(total)) %>%
+  select(course_name) %>%
+  slice(1:5) 
+
+```
